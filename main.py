@@ -6,7 +6,7 @@
 
 # proposed method in README.md
 from queue import PriorityQueue
-
+import argparse
 
 def readGraph(inputFile):
     dim = [int(x) for x in next(inputFile).split()][0]
@@ -21,9 +21,19 @@ def createPriorityQueue(graph, dim):
             q.put((vertexDegree, i))
     return q
 
+def parseArgs():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-f","--inputFile",type=argparse.FileType('r') ,help="Input file")
+    return parser.parse_args()
+
 def main():
-    filePath = input("Enter the path of the input file: ")
-    dim, graph = readGraph(open(filePath))
+    args = parseArgs()
+    if args.inputFile:
+        dim, graph = readGraph(args.inputFile)
+    else:    
+        filePath = input("Enter the path of the input file: ")
+        dim, graph = readGraph(open(filePath))
+    
     stop = False
     nrOfVertices = 0
     while not stop:
