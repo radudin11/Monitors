@@ -103,7 +103,7 @@ def createGraph(args, dim, graph):
                 g.addEdge(i, j)
     return g
 
-def getMinCover(g):
+def guessMinCover(g):
     nrOfVertices = 0
     stop = False
 
@@ -123,6 +123,62 @@ def getMinCover(g):
                 g.removeVertex(v)
     return nrOfVertices
 
+def getCombinations(subsetSize, setLength):
+    # TODO
+    # return all the combinations of subsetSize elements from a set of setLength elements
+    output = []
+    def dfs(left, cur):
+            if len(cur) == subsetSize:   # finish k items
+                output.append(cur[:])
+                return
+            for i in range(left, setLength):
+                cur.append(i)   # pick i
+                dfs(i + 1, cur)     # pick next from i+1
+                cur.pop()       # reset for next iteration
+    dfs(0, [])
+    return output      
+
+
+    return []
+
+def isCover(g, Vertices):
+    # check if the graph is covered by Vertices
+
+    gCopy = copy.deepcopy(g)
+
+    for v in Vertices:
+        gCopy.removeVertex(v)
+    
+    for i in range(gCopy.getDim()):
+        if gCopy.getVertexDegree(i) > 0:
+            return False
+    return True
+
+def searchMinCover(g, guess):
+    # binary search for the minimum number of vertices
+    max = guess
+    min = 1
+
+    while min < max:
+        isCovered = False
+        mid = int((min + max) / 2)
+
+        # get all the combinations of mid elements from the set of vertices
+        combinations = getCombinations(mid, g.getDim())
+
+        # check if any of the combinations is a cover
+        for c in combinations:
+            if isCover(g, c):
+                isCovered = True
+                print("Found cover: ", c)
+                break
+
+        if isCovered:
+            max = mid
+        else:
+            min = mid + 1
+    return max
+
 def main():
     args = parseArgs()
     if args.inputFile:
@@ -134,8 +190,12 @@ def main():
 
     g = createGraph(args, dim, graph)
 
-    nrOfVertices = getMinCover(g)
-     
-    print(nrOfVertices)
+    gCopy = copy.deepcopy(g)
+
+    verticesGuess = guessMinCover(gCopy)
+    print(verticesGuess)
+
+    print(searchMinCover(g, verticesGuess))
+
 if __name__ == '__main__':
     main()
