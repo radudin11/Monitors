@@ -15,22 +15,31 @@
    edges
 
 3) Implementation:
-    (easy to watch on the example in /images)
+    The program makes a guess for the solution and then uses binary search to find if there is 
+    a better one(with less vertices)
 
-    Say we have a undirected graph. To find the minimum number of veritces we first
-    take the vertex with the lowest degree(least edges). To cover all its edges we
-    need all of its adjacent vertices so we count all of them for the final result.
+    3.1) The guess
+        (easy to watch on the example in /images)
 
-    In the example, we take the vertex numbered (1) as it has the least number of 
-    edges (only 1) and count its adjacent vertices (the vertex crossed in red).
-    Now we can eliminate all its edges (of the vertex crossed)(showed by red 
-    lines).
+        Say we have a undirected graph. To find the minimum number of veritces we first
+        take the vertex with the lowest degree(least edges). To cover all its edges we
+        need all of its adjacent vertices so we count all of them for the final result.
 
-    We repeat the same process after we eliminated the edges until there are no
-    more edges in the graph.
+        In the example, we take the vertex numbered (1) as it has the least number of 
+        edges (only 1) and count its adjacent vertices (the vertex crossed in red).
+        Now we can eliminate all its edges (of the vertex crossed)(showed by red 
+        lines).
 
-    Next, we see that the vertex numbered (2) has only 1 edge remaining. We
-    count its "neighbour(s)" and continue with the algorithm..
+        We repeat the same process after we eliminated the edges until there are no
+        more edges in the graph.
+
+        Next, we see that the vertex numbered (2) has only 1 edge remaining. We
+        count its "neighbour(s)" and continue with the algorithm..
+
+    3.2) Binary search
+        The program takes the guess and looks for a smaller number (of vertices) that
+        can cover that graph. It checks every possible combination of k vertices, where
+        k is the smaller number.
 
     3.1) Matrix implementation (default)(-m)
 

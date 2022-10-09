@@ -94,8 +94,6 @@ def createGraph(args, dim, graph):
         g = GraphList(dim)
     else:
         g = GraphMatrix(dim)
-
-    # g = GraphList(dim)
     
     for i in range(dim):
         for j in range(dim):
