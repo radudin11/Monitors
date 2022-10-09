@@ -9,109 +9,187 @@
 
 # proposed method in README.md
 from distutils.debug import DEBUG
+from io import BufferedReader
 from pickle import GLOBAL
 from queue import PriorityQueue
 import argparse
 import copy
+import time
 
 debug = False
 
-class GraphMatrix:
+
+class Graph:
     def __init__(self, dim):
         self.dim = dim
-        self.graph = [[0 for x in range(dim)] for y in range(dim)]
-    
+
     def getDim(self):
         return self.dim
-    
-    def addEdge(self, i, j):
+
+    def addEdge(self, x, y):
+        pass
+
+    def removeVertex(self, x):
+        pass
+
+    def getAdjacentVertices(self, x):
+        pass
+
+    def getVertexDegree(self, x):
+        pass
+
+
+class GraphMatrix(Graph):
+    def __init__(self, dim: int):
+        self.dim = dim
+        self.graph = [[0 for x in range(dim)] for y in range(dim)]
+
+    def getDim(self) -> int:
+        return self.dim
+
+    def addEdge(self, i: int, j: int):
+        if i >= self.dim or j >= self.dim:
+            print("Error: vertex out of range")
+            return
+
         self.graph[i][j] = 1
         self.graph[j][i] = 1
-    
-    def getGraph(self):
+
+    def getGraph(self) -> list:
         return self.graph
-    
-    def getVertexDegree(self, vertex):
+
+    def getVertexDegree(self, vertex: int) -> int:
+        if vertex >= self.dim:
+            print("Error: vertex out of range")
+            return 0
+
         return sum(self.graph[vertex])
-    
-    def getAdjacentVertices(self, vertex):
+
+    def getAdjacentVertices(self, vertex) -> list:
+        if vertex >= self.dim:
+            print("Error: vertex out of range")
+            return []
+
         return [i for i, x in enumerate(self.graph[vertex]) if x == 1]
-    
-    
-    def removeVertex(self, vertex):
+
+    def removeVertex(self, vertex: int):
+        if vertex >= self.dim:
+            print("Error: vertex out of range")
+            return
+
         for i in range(self.dim):
             self.graph[vertex][i] = 0
             self.graph[i][vertex] = 0
 
-class GraphList:
-    def __init__(self, dim):
+
+class GraphList(Graph):
+    def __init__(self, dim: int):
         self.dim = dim
         self.graph = [[] for x in range(dim)]
-    
-    def getDim(self):
+
+    def getDim(self) -> int:
         return self.dim
 
-    def addEdge(self, i, j):
+    def addEdge(self, i: int, j: int):
+        if i >= self.dim or j >= self.dim:
+            print("Error: vertex out of range")
+            return
+
         if j not in self.graph[i]:
             self.graph[i].append(j)
             self.graph[j].append(i)
-    
-    def getGraph(self):
+
+    def getGraph(self) -> list:
         return self.graph
 
-    def getVertexDegree(self, vertex):
+    def getVertexDegree(self, vertex: int) -> int:
+        if vertex >= self.dim:
+            print("Error: vertex out of range")
+            return 0
+
         return len(self.graph[vertex])
-    
-    def getAdjacentVertices(self, vertex):
+
+    def getAdjacentVertices(self, vertex: int) -> list:
+        if vertex >= self.dim:
+            print("Error: vertex out of range")
+            return []
+
         return self.graph[vertex]
 
-    def removeVertex(self, vertex):
+    def removeVertex(self, vertex: int):
+        if vertex >= self.dim:
+            print("Error: vertex out of range")
+            return
+
         for i in self.graph[vertex]:
             self.graph[i].remove(vertex)
         self.graph[vertex] = []
 
-def readGraph(inputFile):
+
+def readGraph(inputFile: BufferedReader):
     dim = [int(x) for x in next(inputFile).split()][0]
     ret = [dim, [[int(x) for x in line.split()] for line in inputFile]]
     inputFile.close()
     return ret
 
 
-def createPriorityQueue(graph):
+def createPriorityQueue(graph: Graph) -> PriorityQueue:
+    # returns a priority queue with the vertices sorted by degree
     q = PriorityQueue(graph.getDim())
     for i in range(graph.getDim()):
         vertexDegree = graph.getVertexDegree(i)
         if vertexDegree > 0:
-            # we add the vertex to the queue and set its priority to its degree
+            # add the vertex to the queue and set its priority to its degree
             q.put((vertexDegree, i))
     return q
 
-def parseArgs():
+
+def parseArgs() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("-f","--inputFile",type=argparse.FileType('r') ,help="Input file")
-    parser.add_argument("-m","--matrix",action="store_true",help="Use matrix representation, default")
-    parser.add_argument("-l","--list",action="store_true",help="Use list representation")
-    parser.add_argument("-d","--debug",action="store_true",help="Debug mode")
+    parser.add_argument("-f", "--inputFile",
+                        type=argparse.FileType('r'), help="Input file")
+    parser.add_argument("-m", "--matrix", action="store_true",
+                        help="Use matrix representation, default")
+    parser.add_argument("-l", "--list", action="store_true",
+                        help="Use list representation")
+    parser.add_argument(
+        "-d", "--debug", action="store_true", help="Debug mode")
     return parser.parse_args()
 
-def createGraph(args, dim, graph):
+
+def createGraph(args: argparse.Namespace) -> Graph:
+    # returns a graph object based on the input file
+
+    # read the graph from the input file
+    if args.inputFile:
+        dim, graph = readGraph(args.inputFile)
+    else:
+        filePath = input("Enter the path of the input file: ")
+        dim, graph = readGraph(open(filePath))
+
+    # choose the graph representation
     if args.list:
         g = GraphList(dim)
     else:
         g = GraphMatrix(dim)
-    
+
     for i in range(dim):
         for j in range(dim):
             if graph[i][j] == 1:
                 g.addEdge(i, j)
     return g
 
-def guessMinCover(g):
+
+def guessMinCover(g: Graph) -> int:
+    # returns a guess for the minimum number of vertices
+    # needed to cover the graph
+
     nrOfVertices = 0
     stop = False
     solution = []
+
     while not stop:
-        # create priority queue
+        # create priority queue with vertices sorted by degree
         q = createPriorityQueue(g)
         if q.empty():
             stop = True
@@ -129,38 +207,40 @@ def guessMinCover(g):
         print("guessed solution: ", solution)
     return nrOfVertices
 
-def getCombinations(subsetSize, setLength):
-    # TODO
-    # return all the combinations of subsetSize elements from a set of setLength elements
+
+def getCombinations(subsetLength: int, setLength: int) -> list:
+    # return all the combinations of subsetLength elements from a set of setLength elements
     output = []
-    def dfs(left, cur):
-            if len(cur) == subsetSize:   # finish k items
-                output.append(cur[:])
-                return
-            for i in range(left, setLength):
-                cur.append(i)   # pick i
-                dfs(i + 1, cur)     # pick next from i+1
-                cur.pop()       # reset for next iteration
+
+    def dfs(left: int, cur: list):
+        if len(cur) == subsetLength:   # finish k items
+            output.append(cur[:])
+            return
+        for i in range(left, setLength):
+            cur.append(i)   # pick i
+            dfs(i + 1, cur)  # pick next from i+1
+            cur.pop()       # reset for next iteration
     dfs(0, [])
-    return output      
+    return output
 
 
-    return []
-
-def isCover(g, Vertices):
+def isCover(g: Graph, Vertices: list) -> bool:
     # check if the graph is covered by Vertices
 
     gCopy = copy.deepcopy(g)
 
     for v in Vertices:
         gCopy.removeVertex(v)
-    
+
     for i in range(gCopy.getDim()):
         if gCopy.getVertexDegree(i) > 0:
             return False
     return True
 
-def searchMinCover(g, guess):
+
+def searchMinCover(g: Graph, guess: int) -> int:
+    # returns the minimum number of vertices needed to cover the graph
+
     # binary search for the minimum number of vertices
     max = guess
     min = 1
@@ -189,6 +269,7 @@ def searchMinCover(g, guess):
             print("No other cover found")
     return max
 
+
 def main():
     args = parseArgs()
 
@@ -196,14 +277,7 @@ def main():
         global debug
         debug = True
 
-    if args.inputFile:
-        dim, graph = readGraph(args.inputFile)
-    else:    
-        filePath = input("Enter the path of the input file: ")
-        dim, graph = readGraph(open(filePath))
-    
-
-    g = createGraph(args, dim, graph)
+    g = createGraph(args)
 
     gCopy = copy.deepcopy(g)
 
@@ -214,5 +288,9 @@ def main():
 
     print(searchMinCover(g, verticesGuess))
 
+
 if __name__ == '__main__':
+    start_time = time.time()
     main()
+    if DEBUG:
+        print("--- %s seconds ---" % (time.time() - start_time))
