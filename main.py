@@ -1,3 +1,6 @@
+# does not work in all cases!!!!!
+
+
 # Monitors problem:
 # input = adjacency matrix of an undirected graph
 # output = minium number of nodes so that all edges are covered
@@ -65,7 +68,10 @@ class GraphList:
 
 def readGraph(inputFile):
     dim = [int(x) for x in next(inputFile).split()][0]
-    return [dim, [[int(x) for x in line.split()] for line in inputFile]]
+    ret = [dim, [[int(x) for x in line.split()] for line in inputFile]]
+    inputFile.close()
+    return ret
+
 
 def createPriorityQueue(graph):
     q = PriorityQueue(graph.getDim())
