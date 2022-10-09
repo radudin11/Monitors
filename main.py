@@ -8,9 +8,13 @@
 
 
 # proposed method in README.md
+from distutils.debug import DEBUG
+from pickle import GLOBAL
 from queue import PriorityQueue
 import argparse
 import copy
+
+debug = False
 
 class GraphMatrix:
     def __init__(self, dim):
@@ -87,6 +91,7 @@ def parseArgs():
     parser.add_argument("-f","--inputFile",type=argparse.FileType('r') ,help="Input file")
     parser.add_argument("-m","--matrix",action="store_true",help="Use matrix representation, default")
     parser.add_argument("-l","--list",action="store_true",help="Use list representation")
+    parser.add_argument("-d","--debug",action="store_true",help="Debug mode")
     return parser.parse_args()
 
 def createGraph(args, dim, graph):
@@ -104,7 +109,7 @@ def createGraph(args, dim, graph):
 def guessMinCover(g):
     nrOfVertices = 0
     stop = False
-
+    solution = []
     while not stop:
         # create priority queue
         q = createPriorityQueue(g)
@@ -119,6 +124,9 @@ def guessMinCover(g):
             adjacenctVertices = copy.copy(g.getAdjacentVertices(vertex))
             for v in adjacenctVertices:
                 g.removeVertex(v)
+            solution.extend(adjacenctVertices)
+    if debug:
+        print("guessed solution: ", solution)
     return nrOfVertices
 
 def getCombinations(subsetSize, setLength):
@@ -168,17 +176,26 @@ def searchMinCover(g, guess):
         for c in combinations:
             if isCover(g, c):
                 isCovered = True
-                print("Found cover: ", c)
+                if debug:
+                    print("Found cover: ", c)
                 break
 
         if isCovered:
             max = mid
         else:
             min = mid + 1
+    if debug:
+        if max == guess:
+            print("No other cover found")
     return max
 
 def main():
     args = parseArgs()
+
+    if args.debug:
+        global debug
+        debug = True
+
     if args.inputFile:
         dim, graph = readGraph(args.inputFile)
     else:    
@@ -191,7 +208,9 @@ def main():
     gCopy = copy.deepcopy(g)
 
     verticesGuess = guessMinCover(gCopy)
-    print(verticesGuess)
+
+    if debug:
+        print(verticesGuess)
 
     print(searchMinCover(g, verticesGuess))
 
