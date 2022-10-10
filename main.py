@@ -8,15 +8,15 @@
 
 
 # proposed method in README.md
-from distutils.debug import DEBUG
 from io import BufferedReader
 from pickle import GLOBAL
 from queue import PriorityQueue
 import argparse
 import copy
+import sys
 import time
 
-debug = False
+DEBUG = False
 
 
 class Graph:
@@ -153,7 +153,8 @@ def parseArgs() -> argparse.Namespace:
     parser.add_argument("-l", "--list", action="store_true",
                         help="Use list representation")
     parser.add_argument(
-        "-d", "--debug", action="store_true", help="Debug mode")
+        "-d", "--DEBUG", action="store_true", help="Debug mode")
+    parser.add_argument("-o", "--outputFile", type=argparse.FileType('w'), help= "Output file")
     return parser.parse_args()
 
 
@@ -203,7 +204,7 @@ def guessMinCover(g: Graph) -> int:
             for v in adjacenctVertices:
                 g.removeVertex(v)
             solution.extend(adjacenctVertices)
-    if debug:
+    if DEBUG:
         print("guessed solution: ", solution)
     return nrOfVertices
 
@@ -256,7 +257,7 @@ def searchMinCover(g: Graph, guess: int) -> int:
         for c in combinations:
             if isCover(g, c):
                 isCovered = True
-                if debug:
+                if DEBUG:
                     print("Found cover: ", c)
                 break
 
@@ -264,18 +265,21 @@ def searchMinCover(g: Graph, guess: int) -> int:
             max = mid
         else:
             min = mid + 1
-    if debug:
+    if DEBUG:
         if max == guess:
             print("No other cover found")
     return max
 
 
 def main():
+    start_time = time.time()
     args = parseArgs()
 
-    if args.debug:
-        global debug
-        debug = True
+    if args.DEBUG:
+        global DEBUG
+        DEBUG = True
+    if args.outputFile:
+        sys.stdout = args.outputFile
 
     g = createGraph(args)
 
@@ -283,14 +287,13 @@ def main():
 
     verticesGuess = guessMinCover(gCopy)
 
-    if debug:
+    if DEBUG:
         print(verticesGuess)
 
     print(searchMinCover(g, verticesGuess))
 
-
-if __name__ == '__main__':
-    start_time = time.time()
-    main()
     if DEBUG:
         print("--- %s seconds ---" % (time.time() - start_time))
+
+if __name__ == '__main__':
+    main()
