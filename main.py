@@ -14,6 +14,7 @@ from queue import PriorityQueue
 import argparse
 import copy
 import sys
+from tabnanny import check
 import time
 
 DEBUG = False
@@ -38,6 +39,30 @@ class Graph:
     def getVertexDegree(self, x):
         pass
 
+    def isCovered(self, guess: int) -> bool:
+        combinations = getCombinations(guess, self.getDim())
+
+        # check if any of the combinations is a cover
+        for c in combinations:
+            if self.isCover(c):
+                if DEBUG:
+                    print("Found cover: ", c)
+                    print(guess)
+                    print("")
+                return True
+        return False
+    def isCover(self, Vertices: list) -> bool:
+        # check if the graph is covered by Vertices
+
+        gCopy = copy.deepcopy(self)
+
+        for v in Vertices:
+            gCopy.removeVertex(v)
+
+        for i in range(gCopy.getDim()):
+            if gCopy.getVertexDegree(i) > 0:
+                return False
+        return True
 
 class GraphMatrix(Graph):
     def __init__(self, dim: int):
@@ -157,6 +182,8 @@ def parseArgs() -> argparse.Namespace:
     parser.add_argument("-o", "--outputFile", type=argparse.FileType('w'), help= "Output file")
     parser.add_argument("-no-guess", "--no-guess", action="store_true", help= "Do not use the guess, \
         by default the program makes a guess using the algorithm explained in the README.md\nRecomended for small graphs")
+    parser.add_argument("-make-guess", "--make-guess", type=int, help= "Takes a guess and checks if there is a solution with \
+        that many monitors or less")
     return parser.parse_args()
 
 
@@ -227,20 +254,6 @@ def getCombinations(subsetLength: int, setLength: int) -> list:
     return output
 
 
-def isCover(g: Graph, Vertices: list) -> bool:
-    # check if the graph is covered by Vertices
-
-    gCopy = copy.deepcopy(g)
-
-    for v in Vertices:
-        gCopy.removeVertex(v)
-
-    for i in range(gCopy.getDim()):
-        if gCopy.getVertexDegree(i) > 0:
-            return False
-    return True
-
-
 def searchMinCover(g: Graph, guess: int) -> int:
     # returns the minimum number of vertices needed to cover the graph
 
@@ -249,23 +262,14 @@ def searchMinCover(g: Graph, guess: int) -> int:
     min = 1
 
     while min < max:
-        isCovered = False
         mid = int((min + max) / 2)
+              
 
-        # get all the combinations of mid elements from the set of vertices
-        combinations = getCombinations(mid, g.getDim())
-
-        # check if any of the combinations is a cover
-        for c in combinations:
-            if isCover(g, c):
-                isCovered = True
-                if DEBUG:
-                    print("Found cover: ", c)
-                break
-
-        if isCovered:
+        if g.isCovered(mid):
             max = mid
         else:
+            if DEBUG:
+                print("No solution with ", mid, " vertices\n")
             min = mid + 1
     if DEBUG:
         if max == guess:
@@ -287,13 +291,18 @@ def main():
 
     gCopy = copy.deepcopy(g)
 
-    if not args.no_guess:
+    if args.make_guess:
+        verticesGuess = args.make_guess
+        if verticesGuess > g.getDim() or not g.isCovered(verticesGuess):
+            print("The guess is not correct")
+            return
+    elif not args.no_guess:
         verticesGuess = guessMinCover(gCopy)
+        if DEBUG:
+            print("guessed number of vertices: ", verticesGuess)
     else:
         verticesGuess = g.getDim()
 
-    if DEBUG:
-        print(verticesGuess)
 
     print(searchMinCover(g, verticesGuess))
 
