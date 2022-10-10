@@ -155,6 +155,8 @@ def parseArgs() -> argparse.Namespace:
     parser.add_argument(
         "-d", "--DEBUG", action="store_true", help="Debug mode")
     parser.add_argument("-o", "--outputFile", type=argparse.FileType('w'), help= "Output file")
+    parser.add_argument("-no-guess", "--no-guess", action="store_true", help= "Do not use the guess, \
+        by default the program makes a guess using the algorithm explained in the README.md\nRecomended for small graphs")
     return parser.parse_args()
 
 
@@ -285,7 +287,10 @@ def main():
 
     gCopy = copy.deepcopy(g)
 
-    verticesGuess = guessMinCover(gCopy)
+    if not args.no_guess:
+        verticesGuess = guessMinCover(gCopy)
+    else:
+        verticesGuess = g.getDim()
 
     if DEBUG:
         print(verticesGuess)
