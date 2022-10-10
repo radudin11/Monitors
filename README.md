@@ -48,7 +48,7 @@
 
 
     In input/input1.txt there is the example showed in the drawing and the
-    answear is indeed 4.
+    answer is indeed 4.
 
 *The implementations matters only for the script itself, the input should always be 
 an adjacency matrix
