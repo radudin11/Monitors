@@ -40,6 +40,9 @@ class Graph:
         pass
 
     def isCovered(self, guess: int) -> bool:
+        # check if the graph is covered by guess nodes
+
+        # get all sets of guess nodes
         combinations = getCombinations(guess, self.getDim())
 
         # check if any of the combinations is a cover
@@ -51,6 +54,7 @@ class Graph:
                     print("")
                 return True
         return False
+
     def isCover(self, Vertices: list) -> bool:
         # check if the graph is covered by Vertices
 
@@ -63,6 +67,7 @@ class Graph:
             if gCopy.getVertexDegree(i) > 0:
                 return False
         return True
+
 
 class GraphMatrix(Graph):
     def __init__(self, dim: int):
@@ -179,10 +184,11 @@ def parseArgs() -> argparse.Namespace:
                         help="Use list representation")
     parser.add_argument(
         "-d", "--DEBUG", action="store_true", help="Debug mode")
-    parser.add_argument("-o", "--outputFile", type=argparse.FileType('w'), help= "Output file")
-    parser.add_argument("-no-guess", "--no-guess", action="store_true", help= "Do not use the guess, \
+    parser.add_argument("-o", "--outputFile",
+                        type=argparse.FileType('w'), help="Output file")
+    parser.add_argument("-no-guess", "--no-guess", action="store_true", help="Do not use the guess, \
         by default the program makes a guess using the algorithm explained in the README.md\nRecomended for small graphs")
-    parser.add_argument("-make-guess", "--make-guess", type=int, help= "Takes a guess and checks if there is a solution with \
+    parser.add_argument("-make-guess", "--make-guess", type=int, help="Takes a guess and checks if there is a solution with \
         that many monitors or less")
     return parser.parse_args()
 
@@ -263,7 +269,6 @@ def searchMinCover(g: Graph, guess: int) -> int:
 
     while min < max:
         mid = int((min + max) / 2)
-              
 
         if g.isCovered(mid):
             max = mid
@@ -274,6 +279,8 @@ def searchMinCover(g: Graph, guess: int) -> int:
     if DEBUG:
         if max == guess:
             print("No other cover found")
+        else:
+            print("Final answer: ")
     return max
 
 
@@ -303,11 +310,12 @@ def main():
     else:
         verticesGuess = g.getDim()
 
-
+        
     print(searchMinCover(g, verticesGuess))
 
     if DEBUG:
         print("--- %s seconds ---" % (time.time() - start_time))
+
 
 if __name__ == '__main__':
     main()
