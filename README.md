@@ -52,3 +52,18 @@
 
 *The implementations matters only for the script itself, the input should always be 
 an adjacency matrix
+
+4) options:
+  -h, --help            show this help message and exit
+  -f INPUTFILE, --inputFile INPUTFILE
+                        Input file
+  -m, --matrix          Use matrix representation, default
+  -l, --list            Use list representation
+  -d, --DEBUG           Debug mode
+  -o OUTPUTFILE, --outputFile OUTPUTFILE
+                        Output file
+  -no-guess, --no-guess
+                        Do not use the guess, by default the program makes a guess using the algorithm explained in the README.md Recomended for    
+                        small graphs
+  -make-guess MAKE_GUESS, --make-guess MAKE_GUESS
+                        Takes a guess and checks if there is a solution with that many monitors or less
